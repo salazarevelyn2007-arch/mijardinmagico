@@ -1,0 +1,553 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Jardín Mágico</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(#8ed8ff, #d7f7ff);
+      color: #263238;
+    }
+
+    header {
+      text-align: center;
+      padding: 18px;
+      background: #4caf50;
+      color: white;
+      box-shadow: 0 3px 8px #555;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+    }
+
+    .estadisticas {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      flex-wrap: wrap;
+      font-weight: bold;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 15px;
+    }
+
+    .panel {
+      background: #ffffffdd;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 10px #777;
+    }
+
+    .herramientas {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #81c784;
+      color: #173b1a;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: #66bb6a;
+    }
+
+    button.activo {
+      background: #ffca28;
+      box-shadow: 0 0 8px #ff9800;
+    }
+
+    #jardin {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      background: #8bc34a;
+      padding: 18px;
+      border-radius: 18px;
+      border: 8px solid #795548;
+    }
+
+    .parcela {
+      min-height: 145px;
+      border-radius: 15px;
+      background: #8d5a35;
+      border: 4px solid #633d25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: 0.2s;
+    }
+
+    .parcela:hover {
+      transform: scale(1.03);
+    }
+
+    .parcela.regada {
+      background: #6d482c;
+      border-color: #3f2a1b;
+    }
+
+    .planta {
+      font-size: 45px;
+      animation: crecer 0.5s ease;
+    }
+
+    @keyframes crecer {
+      from {
+        transform: scale(0);
+      }
+      to {
+        transform: scale(1);
+      }
+    }
+
+    .mensaje {
+      text-align: center;
+      min-height: 25px;
+      font-weight: bold;
+      color: #33691e;
+    }
+
+    .instrucciones {
+      line-height: 1.6;
+    }
+
+    .bloqueado {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 650px) {
+      #jardin {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .parcela {
+        min-height: 110px;
+      }
+
+      .planta {
+        font-size: 35px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🌱 Mi Jardín Mágico 🦋</h1>
+
+    <div class="estadisticas">
+      <span>⭐ Nivel: <b id="nivel">1</b></span>
+      <span>✨ Experiencia: <b id="experiencia">0</b>/<b id="experienciaNecesaria">50</b></span>
+      <span>💧 Agua: <b id="agua">20</b></span>
+      <span>🪙 Monedas: <b id="monedas">0</b></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel instrucciones">
+      <h2>Cómo jugar</h2>
+      <ol>
+        <li>Selecciona una herramienta.</li>
+        <li>Haz clic en una parcela vacía para plantar.</li>
+        <li>Riega las plantas para que crezcan.</li>
+        <li>Cuando estén maduras, cosecha y gana experiencia.</li>
+        <li>Sube de nivel para desbloquear nuevas plantas y animales.</li>
+      </ol>
+    </section>
+
+    <section class="panel">
+      <div class="herramientas">
+        <button id="botonPlantar" onclick="seleccionarHerramienta('plantar')">
+          🌱 Plantar
+        </button>
+
+        <button id="botonRegar" onclick="seleccionarHerramienta('regar')">
+          💧 Regar
+        </button>
+
+        <button id="botonCosechar" onclick="seleccionarHerramienta('cosechar')">
+          🧺 Cosechar
+        </button>
+
+        <button onclick="comprarAgua()">
+          🚰 Comprar agua
+        </button>
+      </div>
+
+      <p class="mensaje" id="mensaje">
+        Selecciona una herramienta para comenzar.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>🌳 Jardín</h2>
+      <div id="jardin"></div>
+    </section>
+
+    <section class="panel">
+      <h2>🦋 Flora y fauna desbloqueada</h2>
+      <p id="desbloqueos">🌱 Semilla básica</p>
+    </section>
+  </main>
+
+  <script>
+    const cantidadParcelas = 15;
+
+    let herramientaActual = "";
+    let nivel = 1;
+    let experiencia = 0;
+    let experienciaNecesaria = 50;
+    let agua = 20;
+    let monedas = 0;
+
+    let parcelas = [];
+
+    const tiposDePlanta = [
+      {
+        nombre: "Zanahoria",
+        emoji: "🥕",
+        nivel: 1,
+        experiencia: 10,
+        monedas: 5
+      },
+      {
+        nombre: "Flor",
+        emoji: "🌷",
+        nivel: 1,
+        experiencia: 12,
+        monedas: 6
+      },
+      {
+        nombre: "Girasol",
+        emoji: "🌻",
+        nivel: 2,
+        experiencia: 18,
+        monedas: 10
+      },
+      {
+        nombre: "Tomate",
+        emoji: "🍅",
+        nivel: 3,
+        experiencia: 25,
+        monedas: 15
+      },
+      {
+        nombre: "Calabaza",
+        emoji: "🎃",
+        nivel: 4,
+        experiencia: 35,
+        monedas: 25
+      }
+    ];
+
+    function crearJardin() {
+      const jardin = document.getElementById("jardin");
+
+      for (let i = 0; i < cantidadParcelas; i++) {
+        parcelas.push({
+          planta: null,
+          regada: false,
+          crecimiento: 0,
+          madura: false
+        });
+
+        const parcela = document.createElement("div");
+        parcela.className = "parcela";
+        parcela.id = "parcela-" + i;
+        parcela.innerHTML = "🟫";
+        parcela.onclick = () => usarHerramienta(i);
+
+        jardin.appendChild(parcela);
+      }
+    }
+
+    function seleccionarHerramienta(herramienta) {
+      herramientaActual = herramienta;
+
+      document.querySelectorAll(".herramientas button")
+        .forEach(boton => boton.classList.remove("activo"));
+
+      if (herramienta === "plantar") {
+        document.getElementById("botonPlantar").classList.add("activo");
+        mostrarMensaje("Haz clic en una parcela vacía para plantar.");
+      }
+
+      if (herramienta === "regar") {
+        document.getElementById("botonRegar").classList.add("activo");
+        mostrarMensaje("Haz clic en una planta para regarla.");
+      }
+
+      if (herramienta === "cosechar") {
+        document.getElementById("botonCosechar").classList.add("activo");
+        mostrarMensaje("Haz clic en una planta madura para cosecharla.");
+      }
+    }
+
+    function usarHerramienta(numeroParcela) {
+      const parcela = parcelas[numeroParcela];
+
+      if (herramientaActual === "plantar") {
+        plantar(numeroParcela, parcela);
+      } else if (herramientaActual === "regar") {
+        regar(numeroParcela, parcela);
+      } else if (herramientaActual === "cosechar") {
+        cosechar(numeroParcela, parcela);
+      } else {
+        mostrarMensaje("Primero selecciona una herramienta.");
+      }
+    }
+
+    function plantar(numeroParcela, parcela) {
+      if (parcela.planta !== null) {
+        mostrarMensaje("Esta parcela ya tiene una planta.");
+        return;
+      }
+
+      const plantasDisponibles = tiposDePlanta.filter(
+        planta => planta.nivel <= nivel
+      );
+
+      const plantaElegida =
+        plantasDisponibles[
+          Math.floor(Math.random() * plantasDisponibles.length)
+        ];
+
+      parcela.planta = plantaElegida;
+      parcela.crecimiento = 0;
+      parcela.regada = false;
+      parcela.madura = false;
+
+      actualizarParcela(numeroParcela);
+      mostrarMensaje("Plantaste una planta de " + plantaElegida.nombre + ".");
+    }
+
+    function regar(numeroParcela, parcela) {
+      if (parcela.planta === null) {
+        mostrarMensaje("No hay ninguna planta en esta parcela.");
+        return;
+      }
+
+      if (parcela.madura) {
+        mostrarMensaje("Esta planta ya está madura.");
+        return;
+      }
+
+      if (parcela.regada) {
+        mostrarMensaje("Esta planta ya fue regada.");
+        return;
+      }
+
+      if (agua <= 0) {
+        mostrarMensaje("No tienes agua. Compra más agua.");
+        return;
+      }
+
+      agua--;
+      parcela.regada = true;
+      parcela.crecimiento += 50;
+
+      if (parcela.crecimiento >= 100) {
+        parcela.crecimiento = 100;
+        parcela.madura = true;
+        mostrarMensaje("¡Tu planta creció y está lista para cosechar!");
+      } else {
+        mostrarMensaje("La planta creció. Riégala otra vez más tarde.");
+      }
+
+      actualizarParcela(numeroParcela);
+      actualizarInterfaz();
+    }
+
+    function cosechar(numeroParcela, parcela) {
+      if (parcela.planta === null) {
+        mostrarMensaje("No hay ninguna planta en esta parcela.");
+        return;
+      }
+
+      if (!parcela.madura) {
+        mostrarMensaje("La planta todavía no está madura.");
+        return;
+      }
+
+      const planta = parcela.planta;
+
+      monedas += planta.monedas;
+      ganarExperiencia(planta.experiencia);
+
+      parcela.planta = null;
+      parcela.regada = false;
+      parcela.crecimiento = 0;
+      parcela.madura = false;
+
+      actualizarParcela(numeroParcela);
+      actualizarInterfaz();
+
+      mostrarMensaje(
+        "Cosechaste " + planta.nombre +
+        " y ganaste " + planta.experiencia +
+        " puntos de experiencia."
+      );
+    }
+
+    function comprarAgua() {
+      if (monedas < 5) {
+        mostrarMensaje("Necesitas 5 monedas para comprar agua.");
+        return;
+      }
+
+      monedas -= 5;
+      agua += 10;
+
+      actualizarInterfaz();
+      mostrarMensaje("Compraste 10 unidades de agua.");
+    }
+
+    function ganarExperiencia(cantidad) {
+      experiencia += cantidad;
+
+      while (experiencia >= experienciaNecesaria) {
+        experiencia -= experienciaNecesaria;
+        nivel++;
+        experienciaNecesaria += 30;
+
+        mostrarMensaje("🎉 ¡Subiste al nivel " + nivel + "!");
+      }
+
+      actualizarDesbloqueos();
+    }
+
+    function actualizarParcela(numeroParcela) {
+      const parcelaHTML = document.getElementById("parcela-" + numeroParcela);
+      const parcela = parcelas[numeroParcela];
+
+      parcelaHTML.classList.toggle("regada", parcela.regada);
+
+      if (parcela.planta === null) {
+        parcelaHTML.innerHTML = "🟫";
+        return;
+      }
+
+      let emoji = "🌱";
+
+      if (parcela.crecimiento >= 50) {
+        emoji = parcela.planta.emoji;
+      }
+
+      if (parcela.madura) {
+        emoji = parcela.planta.emoji + "✨";
+      }
+
+      parcelaHTML.innerHTML = `
+        <div>
+          <div class="planta">${emoji}</div>
+          <small>
+            ${parcela.planta.nombre}<br>
+            Crecimiento: ${parcela.crecimiento}%
+          </small>
+        </div>
+      `;
+    }
+
+    function actualizarInterfaz() {
+      document.getElementById("nivel").textContent = nivel;
+      document.getElementById("experiencia").textContent = experiencia;
+      document.getElementById("experienciaNecesaria").textContent =
+        experienciaNecesaria;
+      document.getElementById("agua").textContent = agua;
+      document.getElementById("monedas").textContent = monedas;
+    }
+
+    function actualizarDesbloqueos() {
+      const desbloqueados = tiposDePlanta
+        .filter(planta => planta.nivel <= nivel)
+        .map(planta => planta.emoji + " " + planta.nombre)
+        .join(" · ");
+
+      let texto = desbloqueados;
+
+      if (nivel >= 2) {
+        texto += " · 🦋 Mariposas";
+      }
+
+      if (nivel >= 3) {
+        texto += " · 🐝 Abejas";
+      }
+
+      if (nivel >= 4) {
+        texto += " · 🐦 Pájaros";
+      }
+
+      if (nivel >= 5) {
+        texto += " · 🐰 Conejos";
+      }
+
+      document.getElementById("desbloqueos").textContent = texto;
+    }
+
+    function mostrarMensaje(texto) {
+      document.getElementById("mensaje").textContent = texto;
+    }
+
+    /*
+      Cada 15 segundos las plantas regadas absorben el agua
+      y pueden seguir creciendo.
+    */
+    setInterval(() => {
+      parcelas.forEach((parcela, indice) => {
+        if (
+          parcela.planta !== null &&
+          parcela.regada &&
+          !parcela.madura
+        ) {
+          parcela.crecimiento += 25;
+          parcela.regada = false;
+
+          if (parcela.crecimiento >= 100) {
+            parcela.crecimiento = 100;
+            parcela.madura = true;
+          }
+
+          actualizarParcela(indice);
+        }
+      });
+
+      mostrarMensaje("El tiempo pasó: revisa tus plantas.");
+    }, 15000);
+
+    crearJardin();
+    actualizarInterfaz();
+    actualizarDesbloqueos();
+  </script>
+</body>
+</html>
+```

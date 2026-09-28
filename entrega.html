@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>EcoForma | Arte y Sostenibilidad</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --verde:#315c45;
+    --verde-claro:#8eae62;
+    --tierra:#b84a36;
+    --crema:#f1e8d6;
+    --oscuro:#18251f;
+    --dorado:#d49a3a;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:var(--crema);
+    color:var(--oscuro);
+}
+
+/* ENCABEZADO */
+
+header{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 80% 20%, #d49a3a 0 4%, transparent 4.5%),
+        radial-gradient(circle at 15% 75%, #315c45 0 8%, transparent 8.5%),
+        linear-gradient(135deg,#d9ceb5,#73956f);
+
+    position:relative;
+    overflow:hidden;
+}
+
+/* elementos decorativos */
+
+header::before{
+    content:"";
+    position:absolute;
+    width:450px;
+    height:450px;
+    border:2px solid rgba(255,255,255,.5);
+    border-radius:50%;
+    right:-120px;
+    top:150px;
+}
+
+header::after{
+    content:"";
+    position:absolute;
+    width:300px;
+    height:300px;
+    background:#b84a36;
+    opacity:.7;
+    border-radius:20% 80% 50% 50%;
+    left:-100px;
+    bottom:-100px;
+    transform:rotate(25deg);
+}
+
+/* NAV */
+
+nav{
+    position:relative;
+    z-index:5;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:25px 7%;
+
+    background:rgba(24,37,31,.85);
+    color:white;
+}
+
+.logo{
+    font-size:1.5rem;
+    font-weight:bold;
+    letter-spacing:3px;
+}
+
+nav a{
+    color:white;
+    text-decoration:none;
+    margin-left:30px;
+}
+
+/* HERO */
+
+.hero{
+    position:relative;
+    z-index:2;
+
+    max-width:900px;
+    padding:12vh 7%;
+}
+
+.etiqueta{
+    color:var(--verde);
+    text-transform:uppercase;
+    letter-spacing:4px;
+    font-size:.8rem;
+    font-weight:bold;
+}
+
+h1{
+    font-family:Georgia,serif;
+    font-size:clamp(4rem,10vw,8rem);
+    line-height:.85;
+    margin:25px 0;
+}
+
+.hero p{
+    max-width:600px;
+    font-size:1.2rem;
+    line-height:1.7;
+}
+
+.boton{
+    display:inline-block;
+    margin-top:30px;
+    padding:15px 25px;
+
+    background:var(--oscuro);
+    color:white;
+
+    text-decoration:none;
+    border-radius:5px;
+}
+
+/* SECCIONES */
+
+main{
+    max-width:1200px;
+    margin:auto;
+    padding:80px 7%;
+}
+
+section{
+    padding:80px 0;
+    border-bottom:1px solid #bdb4a4;
+}
+
+.numero{
+    color:var(--tierra);
+    font-weight:bold;
+    letter-spacing:3px;
+    margin-bottom:15px;
+}
+
+h2{
+    font-family:Georgia,serif;
+    font-size:clamp(2.5rem,5vw,4.5rem);
+    margin-bottom:25px;
+}
+
+/* ODS */
+
+.ods{
+    display:grid;
+    grid-template-columns:1fr 2fr;
+    gap:50px;
+    align-items:center;
+}
+
+.ods-card{
+    background:var(--oscuro);
+    color:white;
+    padding:35px;
+    border-radius:15px;
+
+    box-shadow:
+        15px 15px 0 var(--tierra);
+}
+
+.ods-number{
+    font-size:5rem;
+    font-weight:bold;
+}
+
+.ods-card h3{
+    font-size:1.5rem;
+    margin-bottom:15px;
+}
+
+/* TALLER */
+
+.taller{
+    display:grid;
+    grid-template-columns:300px 1fr;
+    gap:40px;
+}
+
+.controles{
+    background:#ded2bd;
+    padding:30px;
+    border-radius:15px;
+}
+
+.controles label{
+    display:block;
+    margin-top:20px;
+    font-weight:bold;
+}
+
+select,
+input{
+    width:100%;
+    margin-top:8px;
+}
+
+select{
+    padding:10px;
+}
+
+input[type="range"]{
+    accent-color:var(--verde);
+}
+
+button{
+    width:100%;
+    margin-top:20px;
+    padding:13px;
+
+    border:none;
+    border-radius:5px;
+
+    background:var(--verde);
+    color:white;
+
+    cursor:pointer;
+    font-size:1rem;
+}
+
+button:hover{
+    background:var(--tierra);
+}
+
+/* CANVAS */
+
+.lienzo{
+    background:#111;
+    padding:15px;
+    border-radius:15px;
+
+    box-shadow:10px 10px 0 #aaa;
+}
+
+canvas{
+    width:100%;
+    display:block;
+    background:#f7f0e2;
+}
+
+/* TARJETAS */
+
+.tarjetas{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.tarjeta{
+    background:#ded2bd;
+    padding:30px;
+    border-radius:12px;
+
+    transition:.3s;
+}
+
+.tarjeta:hover{
+    transform:translateY(-8px) rotate(-1deg);
+}
+
+.tarjeta h3{
+    font-family:Georgia,serif;
+    font-size:1.7rem;
+    margin-bottom:10px;
+}
+
+/* EVALUACIÓN */
+
+.evaluacion{
+    background:var(--verde);
+    color:white;
+
+    padding:50px;
+    border-radius:20px;
+}
+
+.criterio{
+    margin:25px 0;
+}
+
+.resultado{
+    font-family:Georgia,serif;
+    font-size:2.5rem;
+    margin-top:30px;
+}
+
+/* FOOTER */
+
+footer{
+    background:var(--oscuro);
+    color:white;
+    padding:50px 7%;
+    text-align:center;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:800px){
+
+    nav{
+        flex-direction:column;
+        gap:15px;
+    }
+
+    nav a{
+        margin:0 8px;
+    }
+
+    .ods,
+    .taller{
+        grid-template-columns:1fr;
+    }
+
+    .tarjetas{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+<header>
+
+<nav>
+
+<div class="logo">
+🌱 ECOFORMA
+</div>
+
+<div>
+<a href="#inicio">Inicio</a>
+<a href="#ods">ODS 12</a>
+<a href="#taller">Crear</a>
+<a href="#evaluacion">Evaluación</a>
+</div>
+
+</nav>
+
+
+<div class="hero" id="inicio">
+
+<div class="etiqueta">
+Artes Plásticas · Programación para Artista I
+</div>
+
+<h1>
+Crear también es cuidar.
+</h1>
+
+<p>
+EcoForma es una experiencia artística digital que combina
+programación, artes plásticas y sostenibilidad para explorar
+el ODS 12 de la Agenda 2030.
+</p>
+
+<a class="boton" href="#taller">
+Explorar el taller →
+</a>
+
+</div>
+
+</header>
+
+
+<main>
+
+<!-- ODS -->
+
+<section id="ods">
+
+<div class="ods">
+
+<div class="ods-card">
+
+<div class="ods-number">
+12
+</div>
+
+<h3>
+Producción y consumo responsables
+</h3>
+
+<p>
+Promover modalidades sostenibles de producción y consumo.
+</p>
+
+</div>
+
+
+<div>
+
+<div class="numero">
+01 · CONTEXTO
+</div>
+
+<h2>
+Arte, tecnología y sostenibilidad
+</h2>
+
+<p>
+La creación artística puede generar nuevas formas de reflexión
+sobre nuestra relación con los materiales y los recursos.
+EcoForma utiliza la programación como herramienta artística
+para experimentar con formas, colores y composiciones digitales.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- TALLER -->
+
+<section id="taller">
+
+<div class="numero">
+02 · ESTUDIO GENERATIVO
+</div>
+
+<h2>
+Crea tu composición
+</h2>
+
+<div class="taller">
+
+<div class="controles">
+
+<h3>
+Controles creativos
+</h3>
+
+<label>
+Paleta
+</label>
+
+<select id="paleta">
+
+<option value="tierra">
+Tierra
+</option>
+
+<option value="bosque">
+Bosque
+</option>
+
+<option value="agua">
+Agua
+</option>
+
+</select>
+
+
+<label>
+Cantidad de elementos:
+<span id="cantidadTexto">20</span>
+</label>
+
+<input
+type="range"
+id="cantidad"
+min="5"
+max="80"
+value="20"
+>
+
+
+<label>
+Tamaño de las formas
+</label>
+
+<input
+type="range"
+id="tamano"
+min="10"
+max="100"
+value="45"
+>
+
+
+<button onclick="generarObra()">
+✦ GENERAR OBRA
+</button>
+
+<button onclick="limpiar()">
+✕ LIMPIAR
+</button>
+
+</div>
+
+
+<div class="lienzo">
+
+<canvas
+id="canvas"
+width="900"
+height="550">
+</canvas>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- CONCEPTOS -->
+
+<section>
+
+<div class="numero">
+03 · PRINCIPIOS
+</div>
+
+<h2>
+Tres acciones
+</h2>
+
+<div class="tarjetas">
+
+<div class="tarjeta">
+
+<h3>
+♻ Reutilizar
+</h3>
+
+<p>
+Transformar materiales existentes en nuevas posibilidades
+creativas en lugar de desecharlos.
+</p>
+
+</div>
+
+
+<div class="tarjeta">
+
+<h3>
+◌ Reducir
+</h3>
+
+<p>
+Reflexionar sobre el consumo de materiales y buscar procesos
+artísticos que disminuyan el desperdicio.
+</p>
+
+</div>
+
+
+<div class="tarjeta">
+
+<h3>
+✦ Crear
+</h3>
+
+<p>
+Utilizar el código como un medio artístico para experimentar
+con imágenes, formas, color y movimiento.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- EVALUACION -->
+
+<section id="evaluacion">
+
+<div class="evaluacion">
+
+<div class="numero">
+04 · EVALUACIÓN
+</div>
+
+<h2>
+Evalúa tu obra
+</h2>
+
+<p>
+Utiliza los controles para valorar diferentes aspectos de
+tu proceso creativo.
+</p>
+
+
+<div class="criterio">
+
+<label>
+Intención artística
+</label>
+
+<input
+class="nota"
+type="range"
+min="1"
+max="10"
+value="8"
+>
+
+</div>
+
+
+<div class="criterio">
+
+<label>
+Uso responsable de recursos
+</label>
+
+<input
+class="nota"
+type="range"
+min="1"
+max="10"
+value="8"
+>
+
+</div>
+
+
+<div class="criterio">
+
+<label>
+Experimentación digital
+</label>
+
+<input
+class="nota"
+type="range"
+min="1"
+max="10"
+value="9"
+>
+
+</div>
+
+
+<div
+class="resultado"
+id="resultado">
+Evaluación: 25 / 30
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<footer>
+
+<h3>
+ECOFORMA
+</h3>
+
+<p>
+Arte · Código · Sostenibilidad
+</p>
+
+<p>
+Proyecto de Programación para Artista I
+</p>
+
+</footer>
+
+
+<script>
+
+/* ==========================
+   CANVAS
+========================== */
+
+const canvas =
+document.getElementById("canvas");
+
+const ctx =
+canvas.getContext("2d");
+
+
+/* ==========================
+   PALETAS
+========================== */
+
+const paletas = {
+
+tierra:[
+"#9b4a35",
+"#d08b5b",
+"#e6c79a",
+"#4b5d45",
+"#252c28"
+],
+
+bosque:[
+"#173f35",
+"#3f7055",
+"#86a96f",
+"#d8c69a",
+"#6e4636"
+],
+
+agua:[
+"#183d4d",
+"#397b8c",
+"#8fc1b8",
+"#d8d3b8",
+"#b45c49"
+]
+
+};
+
+
+/* ==========================
+   GENERAR OBRA
+========================== */
+
+function generarObra(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+const tipo =
+document.getElementById("paleta").value;
+
+const colores =
+paletas[tipo];
+
+
+const cantidad =
+Number(
+document.getElementById("cantidad").value
+);
+
+
+const tamano =
+Number(
+document.getElementById("tamano").value
+);
+
+
+/* fondo */
+
+ctx.fillStyle="#f7f0e2";
+
+ctx.fillRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+/* elementos */
+
+for(
+let i=0;
+i<cantidad;
+i++
+){
+
+const x =
+Math.random()*canvas.width;
+
+const y =
+Math.random()*canvas.height;
+
+const radio =
+Math.random()*tamano+10;
+
+
+const color =
+colores[
+Math.floor(
+Math.random()*colores.length
+)
+];
+
+
+ctx.globalAlpha =
+0.45+
+Math.random()*0.5;
+
+ctx.fillStyle=color;
+
+
+/* círculo */
+
+if(Math.random()>0.5){
+
+ctx.beginPath();
+
+ctx.arc(
+x,
+y,
+radio,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+}
+
+
+/* rectángulo */
+
+else{
+
+ctx.save();
+
+ctx.translate(
+x,
+y
+);
+
+ctx.rotate(
+Math.random()*Math.PI
+);
+
+ctx.fillRect(
+-radio,
+-radio/2,
+radio*2,
+radio
+);
+
+ctx.restore();
+
+}
+
+}
+
+
+/* líneas orgánicas */
+
+ctx.globalAlpha=.4;
+
+ctx.strokeStyle="#315c45";
+
+ctx.lineWidth=2;
+
+
+for(
+let i=0;
+i<8;
+i++
+){
+
+ctx.beginPath();
+
+ctx.arc(
+Math.random()*canvas.width,
+Math.random()*canvas.height,
+80+Math.random()*100,
+0,
+Math.PI*2
+);
+
+ctx.stroke();
+
+}
+
+
+ctx.globalAlpha=1;
+
+}
+
+
+/* ==========================
+   LIMPIAR
+========================== */
+
+function limpiar(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+ctx.fillStyle="#f7f0e2";
+
+ctx.fillRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+}
+
+
+/* ==========================
+   CONTROL DE CANTIDAD
+========================== */
+
+document
+.getElementById("cantidad")
+.addEventListener(
+"input",
+function(){
+
+document
+.getElementById("cantidadTexto")
+.textContent=this.value;
+
+}
+);
+
+
+/* ==========================
+   EVALUACIÓN
+========================== */
+
+const notas =
+document.querySelectorAll(".nota");
+
+function evaluar(){
+
+let total=0;
+
+notas.forEach(
+nota=>{
+total += Number(nota.value);
+}
+);
+
+document
+.getElementById("resultado")
+.textContent=
+"Evaluación: "+
+total+
+" / 30";
+
+}
+
+
+notas.forEach(
+nota=>{
+nota.addEventListener(
+"input",
+evaluar
+);
+}
+);
+
+
+/* ==========================
+   OBRA INICIAL
+========================== */
+
+generarObra();
+
+</script>
+
+</body>
+</html>

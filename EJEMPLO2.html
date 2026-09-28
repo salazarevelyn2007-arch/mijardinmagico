@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bosque Generativo por Parámetros</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: #07130d;
+        font-family: Arial, sans-serif;
+        color: white;
+    }
+
+    canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .panel {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 300px;
+        padding: 18px;
+        border-radius: 16px;
+        background: rgba(5, 15, 10, 0.82);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 40px rgba(0,0,0,.35);
+    }
+
+    h1 {
+        margin: 0 0 12px;
+        font-size: 20px;
+    }
+
+    .parametro {
+        margin: 10px 0;
+    }
+
+    label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    input[type="range"] {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 12px;
+        padding: 12px;
+        border: 0;
+        border-radius: 10px;
+        background: #32c76b;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #27aa59;
+    }
+
+    .voz {
+        margin-top: 14px;
+        padding: 10px;
+        border-radius: 10px;
+        background: rgba(255,255,255,.08);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    #estado {
+        color: #70e99b;
+        font-weight: bold;
+    }
+
+    .comando {
+        color: #aaa;
+        margin-top: 5px;
+    }
+</style>
+</head>
+
+<body>
+
+<canvas id="bosque"></canvas>
+
+<div class="panel">
+
+    <h1>🌲 Bosque generativo</h1>
+
+    <div class="parametro">
+        <label>
+            Árboles
+            <span id="numValor">80</span>
+        </label>
+        <input id="numArboles"
+               type="range"
+               min="10"
+               max="200"
+               value="80">
+    </div>
+
+    <div class="parametro">
+        <label>
+            Altura
+            <span id="alturaValor">120</span>
+        </label>
+        <input id="altura"
+               type="range"
+               min="40"
+               max="220"
+               value="120">
+    </div>
+
+    <div class="parametro">
+        <label>
+            Ramas
+            <span id="ramasValor">5</span>
+        </label>
+        <input id="ramas"
+               type="range"
+               min="1"
+               max="9"
+               value="5">
+    </div>
+
+    <div class="parametro">
+        <label>
+            Inclinación
+            <span id="inclinacionValor">15°</span>
+        </label>
+        <input id="inclinacion"
+               type="range"
+               min="-45"
+               max="45"
+               value="15">
+    </div>
+
+    <div class="parametro">
+        <label>
+            Color
+            <span id="colorTexto">verde</span>
+        </label>
+        <input id="color"
+               type="color"
+               value="#228B45">
+    </div>
+
+    <button onclick="generarBosque()">
+        🌳 Generar bosque
+    </button>
+
+    <button onclick="iniciarVoz()">
+        🎙️ Activar voz
+    </button>
+
+    <div class="voz">
+        <div>Estado: <span id="estado">Inactivo</span></div>
+        <div class="comando">
+            Ejemplos:<br>
+            “cambia el color a rojo”<br>
+            “pon los árboles azules”<br>
+            “color morado”
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+const canvas = document.getElementById("bosque");
+const ctx = canvas.getContext("2d");
+
+let ancho;
+let alto;
+
+function resize() {
+    ancho = canvas.width = window.innerWidth;
+    alto = canvas.height = window.innerHeight;
+
+    generarBosque();
+}
+
+window.addEventListener("resize", resize);
+
+
+// ----------------------------------------------------
+// PARÁMETROS
+// ----------------------------------------------------
+
+const numArboles = document.getElementById("numArboles");
+const altura = document.getElementById("altura");
+const ramas = document.getElementById("ramas");
+const inclinacion = document.getElementById("inclinacion");
+const color = document.getElementById("color");
+
+const numValor = document.getElementById("numValor");
+const alturaValor = document.getElementById("alturaValor");
+const ramasValor = document.getElementById("ramasValor");
+const inclinacionValor = document.getElementById("inclinacionValor");
+const colorTexto = document.getElementById("colorTexto");
+
+
+// Actualizar textos
+
+numArboles.oninput = () => {
+    numValor.textContent = numArboles.value;
+    generarBosque();
+};
+
+altura.oninput = () => {
+    alturaValor.textContent = altura.value;
+    generarBosque();
+};
+
+ramas.oninput = () => {
+    ramasValor.textContent = ramas.value;
+    generarBosque();
+};
+
+inclinacion.oninput = () => {
+    inclinacionValor.textContent = inclinacion.value + "°";
+    generarBosque();
+};
+
+color.oninput = () => {
+    colorTexto.textContent = colorAprox(color.value);
+    generarBosque();
+};
+
+
+// ----------------------------------------------------
+// UTILIDADES
+// ----------------------------------------------------
+
+function aleatorio(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function colorAprox(hex) {
+
+    const colores = {
+        "#ff0000": "rojo",
+        "#00ff00": "verde",
+        "#0000ff": "azul",
+        "#ffff00": "amarillo",
+        "#800080": "morado",
+        "#ffa500": "naranja",
+        "#ffffff": "blanco",
+        "#000000": "negro"
+    };
+
+    return colores[hex.toLowerCase()] || hex;
+}
+
+
+// ----------------------------------------------------
+// GENERACIÓN DEL BOSQUE
+// ----------------------------------------------------
+
+function generarBosque() {
+
+    ctx.clearRect(0, 0, ancho, alto);
+
+    // Cielo
+
+    const cielo = ctx.createLinearGradient(
+        0, 0,
+        0, alto
+    );
+
+    cielo.addColorStop(0, "#081d2c");
+    cielo.addColorStop(0.55, "#173c2b");
+    cielo.addColorStop(1, "#07130d");
+
+    ctx.fillStyle = cielo;
+    ctx.fillRect(0, 0, ancho, alto);
+
+
+    // Niebla
+
+    for (let i = 0; i < 10; i++) {
+
+        ctx.beginPath();
+
+        ctx.fillStyle =
+            `rgba(150,190,170,${0.015 + Math.random()*0.025})`;
+
+        ctx.arc(
+            Math.random() * ancho,
+            alto * 0.55 + Math.random() * 150,
+            150 + Math.random() * 250,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    }
+
+
+    // ------------------------------------------------
+    // Árboles
+    // ------------------------------------------------
+
+    const cantidad = Number(numArboles.value);
+
+    const lista = [];
+
+    for (let i = 0; i < cantidad; i++) {
+
+        const arbol = {
+
+            // Parámetros del árbol
+            altura: Number(altura.value) *
+                    aleatorio(.65, 1.35),
+
+            numeroRamas:
+                Math.max(
+                    1,
+                    Math.round(
+                        Number(ramas.value) *
+                        aleatorio(.65, 1.35)
+                    )
+                ),
+
+            inclinacion:
+                Number(inclinacion.value) +
+                aleatorio(-8, 8),
+
+            color: color.value,
+
+            posicionX:
+                Math.random() * ancho,
+
+            posicionY:
+                alto * .85 +
+                Math.random() * alto * .12,
+
+            escala:
+                aleatorio(.55, 1.25)
+        };
+
+        lista.push(arbol);
+    }
+
+
+    // Dibujar primero los árboles lejanos
+    lista.sort((a,b) => a.posicionY - b.posicionY);
+
+
+    for (const arbol of lista) {
+        dibujarArbol(arbol);
+    }
+
+
+    // Suelo
+
+    ctx.fillStyle = "#07130d";
+
+    ctx.beginPath();
+    ctx.moveTo(0, alto * .88);
+
+    for (let x = 0; x <= ancho; x += 30) {
+
+        ctx.lineTo(
+            x,
+            alto * .88 +
+            Math.sin(x * .01) * 12
+        );
+    }
+
+    ctx.lineTo(ancho, alto);
+    ctx.lineTo(0, alto);
+
+    ctx.closePath();
+    ctx.fill();
+}
+
+
+// ----------------------------------------------------
+// ÁRBOL PROCEDURAL
+// ----------------------------------------------------
+
+function dibujarArbol(arbol) {
+
+    const x = arbol.posicionX;
+    const y = arbol.posicionY;
+
+    const h = arbol.altura * arbol.escala;
+
+    ctx.save();
+
+    ctx.translate(x, y);
+
+
+    // ------------------------------------------------
+    // Tronco
+    // ------------------------------------------------
+
+    const grosor = Math.max(2, h * .045);
+
+    ctx.strokeStyle = "#4b3020";
+    ctx.lineWidth = grosor;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(0, 0);
+
+    const inclinacionRad =
+        arbol.inclinacion * Math.PI / 180;
+
+    const cimaX =
+        Math.sin(inclinacionRad) * h;
+
+    const cimaY = -h;
+
+    ctx.lineTo(cimaX, cimaY);
+
+    ctx.stroke();
+
+
+    // ------------------------------------------------
+    // Ramas generadas automáticamente
+    // ------------------------------------------------
+
+    for (let i = 0; i < arbol.numeroRamas; i++) {
+
+        const t =
+            (i + 1) /
+            (arbol.numeroRamas + 1);
+
+        const bx =
+            cimaX * t;
+
+        const by =
+            cimaY * t;
+
+        const longitud =
+            h * (.12 + Math.random() * .20) *
+            (1 - t * .35);
+
+        const lado =
+            i % 2 === 0 ? -1 : 1;
+
+        const angulo =
+            lado *
+            (0.35 + Math.random() * .5);
+
+        const finX =
+            bx +
+            Math.cos(angulo) *
+            longitud;
+
+        const finY =
+            by -
+            Math.sin(Math.abs(angulo)) *
+            longitud;
+
+        ctx.strokeStyle = "#4b3020";
+        ctx.lineWidth =
+            Math.max(1, grosor * .45);
+
+        ctx.beginPath();
+
+        ctx.moveTo(bx, by);
+        ctx.lineTo(finX, finY);
+
+        ctx.stroke();
+
+
+        // Hojas
+        dibujarHojas(
+            finX,
+            finY,
+            longitud * .55,
+            arbol.color
+        );
+    }
+
+
+    // ------------------------------------------------
+    // Copa principal
+    // ------------------------------------------------
+
+    dibujarHojas(
+        cimaX,
+        cimaY,
+        h * .30,
+        arbol.color
+    );
+
+    ctx.restore();
+}
+
+
+// ----------------------------------------------------
+// HOJAS PROCEDURALES
+// ----------------------------------------------------
+
+function dibujarHojas(x, y, radio, colorBase) {
+
+    const cantidad = 7;
+
+    for (let i = 0; i < cantidad; i++) {
+
+        const angulo =
+            Math.random() * Math.PI * 2;
+
+        const distancia =
+            Math.random() * radio;
+
+        const px =
+            x + Math.cos(angulo) * distancia;
+
+        const py =
+            y + Math.sin(angulo) * distancia;
+
+        const r =
+            radio *
+            (.18 + Math.random() * .25);
+
+        ctx.fillStyle = variarColor(colorBase);
+
+        ctx.beginPath();
+
+        ctx.arc(
+            px,
+            py,
+            r,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    }
+}
+
+
+// Crear variaciones del color elegido
+
+function variarColor(hex) {
+
+    let r = parseInt(hex.substring(1,3),16);
+    let g = parseInt(hex.substring(3,5),16);
+    let b = parseInt(hex.substring(5,7),16);
+
+    const variacion = 25;
+
+    r = Math.max(
+        0,
+        Math.min(
+            255,
+            r + aleatorio(-variacion, variacion)
+        )
+    );
+
+    g = Math.max(
+        0,
+        Math.min(
+            255,
+            g + aleatorio(-variacion, variacion)
+        )
+    );
+
+    b = Math.max(
+        0,
+        Math.min(
+            255,
+            b + aleatorio(-variacion, variacion)
+        )
+    );
+
+    return `rgb(${r},${g},${b})`;
+}
+
+
+// ----------------------------------------------------
+// CONTROL POR VOZ
+// ----------------------------------------------------
+
+let reconocimiento;
+
+function iniciarVoz() {
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+
+        alert(
+            "Tu navegador no soporta reconocimiento de voz. " +
+            "Prueba Google Chrome."
+        );
+
+        return;
+    }
+
+
+    reconocimiento = new SpeechRecognition();
+
+    reconocimiento.lang = "es-MX";
+
+    reconocimiento.continuous = true;
+
+    reconocimiento.interimResults = false;
+
+
+    reconocimiento.onstart = () => {
+
+        document.getElementById("estado")
+            .textContent = "Escuchando...";
+    };
+
+
+    reconocimiento.onend = () => {
+
+        document.getElementById("estado")
+            .textContent = "Inactivo";
+    };
+
+
+    reconocimiento.onerror = (evento) => {
+
+        console.log(
+            "Error de voz:",
+            evento.error
+        );
+
+        document.getElementById("estado")
+            .textContent = "Error";
+    };
+
+
+    reconocimiento.onresult = (evento) => {
+
+        const ultimo =
+            evento.results[
+                evento.results.length - 1
+            ];
+
+        const texto =
+            ultimo[0].transcript
+            .toLowerCase()
+            .trim();
+
+        console.log("Comando:", texto);
+
+        procesarComando(texto);
+    };
+
+
+    reconocimiento.start();
+}
+
+
+// ----------------------------------------------------
+// INTERPRETAR COMANDOS
+// ----------------------------------------------------
+
+function procesarComando(texto) {
+
+    let nuevoColor = null;
+
+
+    // Colores en español
+
+    if (texto.includes("rojo")) {
+
+        nuevoColor = "#ff0000";
+
+    } else if (texto.includes("verde")) {
+
+        nuevoColor = "#228B45";
+
+    } else if (texto.includes("azul")) {
+
+        nuevoColor = "#246BCE";
+
+    } else if (texto.includes("amarillo")) {
+
+        nuevoColor = "#d9c52e";
+
+    } else if (
+        texto.includes("morado") ||
+        texto.includes("violeta")
+    ) {
+
+        nuevoColor = "#8e44ad";
+
+    } else if (texto.includes("naranja")) {
+
+        nuevoColor = "#e67e22";
+
+    } else if (texto.includes("rosa")) {
+
+        nuevoColor = "#e84393";
+
+    } else if (texto.includes("blanco")) {
+
+        nuevoColor = "#eeeeee";
+
+    } else if (texto.includes("negro")) {
+
+        nuevoColor = "#111111";
+    }
+
+
+    if (nuevoColor) {
+
+        color.value = nuevoColor;
+
+        colorTexto.textContent =
+            colorAprox(nuevoColor);
+
+        generarBosque();
+
+        return;
+    }
+
+
+    // Comandos adicionales
+
+    if (
+        texto.includes("más árboles") ||
+        texto.includes("mas arboles")
+    ) {
+
+        numArboles.value =
+            Math.min(
+                200,
+                Number(numArboles.value) + 20
+            );
+
+        numValor.textContent =
+            numArboles.value;
+
+        generarBosque();
+
+        return;
+    }
+
+
+    if (
+        texto.includes("menos árboles") ||
+        texto.includes("menos arboles")
+    ) {
+
+        numArboles.value =
+            Math.max(
+                10,
+                Number(numArboles.value) - 20
+            );
+
+        numValor.textContent =
+            numArboles.value;
+
+        generarBosque();
+
+        return;
+    }
+
+
+    if (
+        texto.includes("regenerar") ||
+        texto.includes("nuevo bosque")
+    ) {
+
+        generarBosque();
+
+        return;
+    }
+}
+
+
+// ----------------------------------------------------
+// INICIO
+// ----------------------------------------------------
+
+resize();
+
+</script>
+
+</body>
+</html>
