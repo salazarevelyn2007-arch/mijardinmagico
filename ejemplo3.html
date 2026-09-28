@@ -227,6 +227,7 @@ let eagleCount = 0;
 let total = 0;
 
 let rotation = 0;
+let lanzamientoPendiente = null;
 
 function flipCoin() {
 
@@ -257,7 +258,8 @@ function flipCoin() {
 
     coin.style.transform = `rotateY(${rotation}deg)`;
 
-    setTimeout(() => {
+    lanzamientoPendiente = setTimeout(() => {
+        lanzamientoPendiente = null;
 
         total++;
 
@@ -288,12 +290,18 @@ function updateStats() {
 
 function resetGame() {
 
+    if (lanzamientoPendiente !== null) {
+        clearTimeout(lanzamientoPendiente);
+        lanzamientoPendiente = null;
+    }
+
     sunCount = 0;
     eagleCount = 0;
     total = 0;
 
     rotation = 0;
 
+    document.getElementById("flipButton").disabled = false;
     document.getElementById("coin").style.transform =
         "rotateY(0deg)";
 
